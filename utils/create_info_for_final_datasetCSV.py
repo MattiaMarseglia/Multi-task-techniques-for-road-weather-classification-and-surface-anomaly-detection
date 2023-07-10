@@ -48,7 +48,7 @@ def create_subset_CSV(cartella_base, class_dictionary):
         print(i,", ",dirnames, len(filenames))
         if i == 0:
             folders = dirnames
-            info_set = {"train": [("image", "class")], "validation": [("image", "class")], "test": [("image", "class")]}
+            info_set = {"train": [("image", "label", "class")], "validation": [("image", "label", "class")], "test": [("image", "label", "class")]}
         else:
             for filename in filenames:
                 sub_strings = filename.split("-")
