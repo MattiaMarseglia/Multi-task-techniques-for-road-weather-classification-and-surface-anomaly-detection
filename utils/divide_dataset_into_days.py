@@ -16,7 +16,7 @@ def verifica_e_crea_cartella(cartella):
     if not os.path.exists(cartella):
         os.makedirs(cartella)
 
-def sposta_immagine(origine, destinazione):
+def copia_immagine(origine, destinazione):
     if os.path.exists(origine):
         try:
             shutil.copy2(origine, destinazione)
@@ -37,7 +37,7 @@ def reorganize_dataset(cartella):
             # print(path_to_save + '/' + filename)
             #"ciao da cami"
             verifica_e_crea_cartella(path_to_save)
-            sposta_immagine(starting_path, path_to_save + '/' + filename)
+            copia_immagine(starting_path, path_to_save + '/' + filename)
 
 
 # Esempio di utilizzo:
