@@ -67,6 +67,7 @@ class dataFrameDataset(Dataset):
 
         sample = {'image': image, 'label': (int(champ_list[0]),int(champ_list[1]),int(champ_list[2]))}
         return sample
+    
 #/user/rmelillo/MattyFolder/train_reordered.csv
 train_data = pd.read_csv(
    '/home/mattia/Desktop/Tesi/datasets/dataset_reordered/train_multihead.csv',
@@ -74,6 +75,7 @@ train_data = pd.read_csv(
 X_train = train_data["image"][1:]
 y_train = train_data["label"][1:]
 classes = train_data["class"][1:]
+
 #/user/rmelillo/MattyFolder/val_reordered.csv
 val_data = pd.read_csv(
    '/home/mattia/Desktop/Tesi/datasets/dataset_reordered/val_multihead.csv',
@@ -85,7 +87,6 @@ classes = val_data["class"][1:]
 print(len(X_train), len(y_train))
 print(len(X_val), len(y_val))
 # X_train , X_val, y_train, y_val = train_test_split(df['image'],df['age'],train_size=0.74,random_state=2022, shuffle=True,stratify=df['age'])
-
 
 df_train = pd.DataFrame({'image':X_train,'label':y_train})
 df_val = pd.DataFrame({'image':X_val,'label':y_val})

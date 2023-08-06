@@ -9,15 +9,16 @@ from PIL import Image
 import torch.nn as nn
 from tqdm import tqdm
 import torch.optim as optim
-from torchscan import summary 
+# from torchscan import summary 
 from torchvision import transforms
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from torch.cuda import device_count, is_available
 from torch import device, set_grad_enabled, argmax, sum, save, is_tensor, logical_and
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+import debugpy
 
-PARAMETERS_AND_NAME_MODEL = "train_multiHead_without_dummy_variables_with_grad_norm"
+PARAMETERS_AND_NAME_MODEL = "train_multiHead_without_dummy_variables_with_grad_norm_on_new_machine_corrected"
 TOKEN = "5823057823:AAE7Uo4nz2GduJVZYDoX_rPrEvmqYJmNUf0"
 chatIds = [168283555] #DA LASCIARE SOLTANTO IL MIO
 
@@ -66,14 +67,14 @@ class dataFrameDataset(Dataset):
         return sample
 
 train_data = pd.read_csv(
-   '/user/rmelillo/MattyFolder/train_reordered.csv',
+   '/user/mmarseglia/train_reordered.csv',
     names=["image", "label","class"],dtype={'image':'str','label':'str','class':'str'})
 X_train = train_data["image"][1:]
 y_train = train_data["label"][1:]
 classes = train_data["class"][1:]
 
 val_data = pd.read_csv(
-   '/user/rmelillo/MattyFolder/val_reordered.csv',
+   '/user/mmarseglia/val_reordered.csv',
     names=["image", "label","class"],dtype={'image':'str','label':'str','class':'str'})
 X_val = val_data["image"][1:]
 y_val = val_data["label"][1:]
@@ -97,8 +98,8 @@ transforms.ToTensor(),
 transforms.Normalize([0.498, 0.498, 0.498], [0.500, 0.500, 0.500]),
 ])
 
-TRAIN_PATH = "/mnt/sdc1/rmelillo/matty_dir/dataset_reordered/train"
-VAL_PATH = "/mnt/sdc1/rmelillo/matty_dir/dataset_reordered/validation"
+TRAIN_PATH = "/mnt/sdc1/mmarseglia/dataset/train"
+VAL_PATH = "/mnt/sdc1/mmarseglia/dataset/validation"
 
 trainDataSet = dataFrameDataset(df_train,TRAIN_PATH,data_transforms_train)
 valnDataSet = dataFrameDataset(df_val,VAL_PATH,data_transforms_val)
@@ -136,7 +137,7 @@ class MyClassifierModel(nn.Module):
 # print(model_names)
 
 # For a model pretrained on VGGFace2
-backbone = efficientnet_b0(weigths=EfficientNet_B0_Weights.IMAGENET1K_V1)
+backbone = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
 
 ClassifierModel_1 = nn.Sequential(
     nn.Dropout(p=0.2),
@@ -235,6 +236,9 @@ def train_model(model, base_criterion, optimizer, scheduler, early_stopper,num_e
 
     toPrint = f'--------------------------------------\nCiao , sto per allenare {PARAMETERS_AND_NAME_MODEL}'
     sendToTelegram(toPrint)
+    
+    # debugpy.listen(("localhost", 5678))
+    # debugpy.wait_for_client()
 
     for epoch in range(num_epochs):
 
@@ -289,6 +293,8 @@ def train_model(model, base_criterion, optimizer, scheduler, early_stopper,num_e
 
                 # statistics
                 running_loss += final_loss.item()
+                pred1[~mask1] = labels1[~mask1]
+                pred3[~mask3] = labels3[~mask3]
                 correctness = (logical_and(logical_and(pred1 == labels1, pred2 == labels2), pred3 == labels3)).long()
                 running_corrects += sum(correctness)
             if phase == 'train':
