@@ -72,9 +72,9 @@ def create_subset_CSV(cartella_base, class_dictionary):
     return info_set
 
 # Esempio di utilizzo:
-cartella_base = "/home/mattia/Desktop/Tesi/dataset_reordered"
+cartella_base = "/home/mattia/Desktop/Tesi/dataset_baseline"
 class_dictionary = {
-    "ice":19,
+    "ice":0,
     "fresh_snow":1,
     "melted_snow":2,
     "wet-mud":3,
@@ -103,10 +103,10 @@ class_dictionary = {
     "dry-concrete-severe":26,
 }
 info_set = create_subset_CSV(cartella_base, class_dictionary)
-nome_file = './train.csv'
+nome_file = './train_baseline.csv'
 scrivi_su_csv(info_set["train"], nome_file)
-nome_file = './test.csv'
+nome_file = './test_baseline.csv'
 scrivi_su_csv(info_set["test"], nome_file)
-nome_file = './val.csv'
+nome_file = './val_baseline.csv'
 scrivi_su_csv(info_set["validation"], nome_file)
 print("finitooo")

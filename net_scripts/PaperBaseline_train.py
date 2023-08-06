@@ -1,25 +1,36 @@
 #This code is to try a single regressor with our backbone
 import os
-import torch
 import json
+import requests
+from torch.cuda import device_count, is_available
+from torch import device, set_grad_enabled, argmax, sum, save, is_tensor
+from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 import numpy as np
 import pandas as pd
 from PIL import Image
 import torch.nn as nn
 from tqdm import tqdm
 import torch.optim as optim
+from torchscan import summary #network summary
 from torchvision import transforms
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 PARAMETERS_AND_NAME_MODEL = "Baseline EfficientNetBo"
+TOKEN = "5823057823:AAE7Uo4nz2GduJVZYDoX_rPrEvmqYJmNUf0"
+chatIds = [1407029395,163426269,168283555] #DA LASCIARE SOLTANTO IL MIO
 
 # from torchsummary import summary #network summary
-print(torch.__version__)
-print(torch.cuda.device_count())
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)     
+print(device_count())
+device = device("cuda" if is_available() else "cpu")
+print(device)
+
+def sendToTelegram(toPrint):
+    for chat_id in chatIds:
+        print(toPrint)
+        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={toPrint}"
+        print(requests.get(url).json())
 
 class dataFrameDataset(Dataset):
     """Face Landmarks dataset."""
@@ -40,7 +51,7 @@ class dataFrameDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
+        if is_tensor(idx):
             idx = idx.tolist()
 
         img_name = os.path.join(self.root_dir,
@@ -57,16 +68,16 @@ class dataFrameDataset(Dataset):
 train_data = pd.read_csv(
    '/home/mattia/Desktop/Tesi/dataset_reordered/train.csv',
     names=["image", "label","class"],dtype={'image':'str','label':'str','class':'str'})
-X_train = train_data["image"][1:128*5]
-y_train = train_data["label"][1:128*5]
-classes = train_data["class"][1:128*5]
+X_train = train_data["image"][1:16*5]
+y_train = train_data["label"][1:16*5]
+classes = train_data["class"][1:16*5]
 
 val_data = pd.read_csv(
    '/home/mattia/Desktop/Tesi/dataset_reordered/val.csv',
     names=["image", "label","class"],dtype={'image':'str','label':'str','class':'str'})
-X_val = val_data["image"][1:128*5]
-y_val = val_data["label"][1:128*5]
-classes = val_data["class"][1:128*5]
+X_val = val_data["image"][1:16*5]
+y_val = val_data["label"][1:16*5]
+classes = val_data["class"][1:16*5]
 
 print(len(X_train), len(y_train))
 print(len(X_val), len(y_val))
@@ -86,17 +97,17 @@ transforms.ToTensor(),
 # transforms.Normalize([0.498, 0.498, 0.498], [0.500, 0.500, 0.500]),
 ])
 
-TRAIN_PATH = "/home/mattia/Desktop/Tesi/dataset_reordered/train"
-VAL_PATH = "/home/mattia/Desktop/Tesi/dataset_reordered/validation"
+TRAIN_PATH = "/home/mattia/Desktop/Tesi/dataset_baseline/train"
+VAL_PATH = "/home/mattia/Desktop/Tesi/dataset_baseline/validation"
 
 trainDataSet = dataFrameDataset(df_train,TRAIN_PATH,data_transforms_train)
 valnDataSet = dataFrameDataset(df_val,VAL_PATH,data_transforms_val)
 
-batch_size = 128
+batch_size = 16 #batches 128
 # create batches
 
-train_set = DataLoader(trainDataSet,shuffle=True,batch_size=batch_size,num_workers=15)
-val_set = DataLoader(valnDataSet,shuffle=True, batch_size=batch_size,num_workers=15)
+train_set = DataLoader(trainDataSet,shuffle=True,batch_size=batch_size)
+val_set = DataLoader(valnDataSet,shuffle=True, batch_size=batch_size)
 
 dataloaders = {'train':train_set,'val':val_set}
 dataset_sizes = {'train':len(trainDataSet),'val':len(valnDataSet)}
@@ -106,12 +117,11 @@ class MyClassifierModel(nn.Module):
     def __init__(self, Backbone, Classifier):
         super(MyClassifierModel, self).__init__()
         self.Backbone = Backbone
-        self.Classifier = Classifier
+        self.Backbone.classifier = Classifier
         
     def forward(self, image):
-        x = self.Backbone(image)
-        output = self.Classifier(x)
-        return output
+        out = self.Backbone(image)
+        return out
 
 class SingleConvNet(nn.Module):
     def __init__(self):
@@ -137,39 +147,35 @@ class SingleConvNet(nn.Module):
 # print(model_names)
 
 #BACKBONE:
-# from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
-from torchvision.models import mobilenet_v2
+
 
 # For a model pretrained on VGGFace2
-# backbone = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-backbone = mobilenet_v2(pretrained=True)
+backbone = efficientnet_b0(weigths=EfficientNet_B0_Weights.IMAGENET1K_V1)
 
 ClassifierModel = nn.Sequential(
-    
-    nn.Linear(1000, 27),
+    nn.Dropout(p=0.2),
+    nn.Linear(1280, 27),
     nn.Softmax(),
     )
 
-
 # #FINAL MODEL
-# model = MyClassifierModel(backbone, ClassifierModel)
-
-# Creazione dell'istanza del modello
-model = SingleConvNet()
-
+model = MyClassifierModel(backbone, ClassifierModel)
 
 count = 0
 for param in model.parameters(): 
     param.requires_grad = True
     count+=1
+# for param in model.Backbone.classifier.parameters(): 
+#     param.requires_grad = True
+#     count+=1
 print(count)
 
 model = model.to(device)
 
 model.eval()
-
+# summary(model, (3,360,240))
 # Observe that all parameters are being optimized
-optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
+optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001)
 # optimizer = optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()),  lr=1e-3, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0)
 # Decay LR by a factor of 0.1 every 3 epochs
 exp_lr_scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
@@ -221,36 +227,40 @@ def train_model(model, base_criterion, optimizer, scheduler, early_stopper,num_e
 
             running_loss = 0.0
             running_corrects = 0
+            count = 1
 
             # Iterate over data.
             for sample_batched in tqdm(dataloaders[phase]):
                 inputs = sample_batched['image'].float().to(device)
                 labels = sample_batched['label'].long().to(device)
-                
+                sendToTelegram("allacbar")
                 # zero the parameter gradients
-                optimizer.zero_grad()
+                if count == 8:
+                    optimizer.zero_grad()
 
                 # forward
                 # track history if only in train
-                with torch.set_grad_enabled(phase == 'train'):
+                with set_grad_enabled(phase == 'train'):
                     #outputs = model(inputs, one_hot_input)
                     outputs = model(inputs)
                     # loss = criterion(outputs, labels)
                     prob = nn.Softmax(dim=1)(outputs)
-                    # Classifier EV: prediction = torch.sum(torch.mul(possibleChoise ,prob),dim=1) -> Classifier argmax: prediction = torch.argmax(prob,dim=1)
-                    prediction = torch.argmax(prob,dim=1)
-                    ##DA FARE LA ONE HOT ENCODING
+
+                    prediction = argmax(prob,dim=1)
+                    
                     loss = base_criterion(outputs, labels)
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
                         loss.backward()
-                        optimizer.step()
-
+                        if count == 8:
+                            optimizer.step()
+                if count == 8:
+                    count = 1
                 # statistics
                 running_loss += loss.item()
                 correctness = (prediction == labels).long()
-                running_corrects += torch.sum(correctness)
+                running_corrects += sum(correctness)
             if phase == 'train':
                 scheduler.step()
 
@@ -270,7 +280,7 @@ def train_model(model, base_criterion, optimizer, scheduler, early_stopper,num_e
                     print(f'Best val Acc: {best_loss:4f}')
                     print(f'Best val Acc: {acc_best_loss:4f}')
                     model.load_state_dict(best_model_wts)
-                    torch.save(model.state_dict(), './baseline_models/'+ PARAMETERS_AND_NAME_MODEL+'pt')
+                    save(model.state_dict(), './baseline_models/'+ PARAMETERS_AND_NAME_MODEL+'.pt')
                     return model,best_loss 
             else:    
                 train_losses.append({'TrainLoss': epoch_loss, 'Valacc': epoch_acc})
@@ -280,7 +290,7 @@ def train_model(model, base_criterion, optimizer, scheduler, early_stopper,num_e
                 best_loss = epoch_loss
                 acc_best_loss = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
-                torch.save(model.state_dict(), './baseline_models/'+ PARAMETERS_AND_NAME_MODEL+'pt')
+                save(model.state_dict(), './baseline_models/'+ PARAMETERS_AND_NAME_MODEL+'.pt')
 
         print()
 
@@ -308,4 +318,4 @@ def train_model(model, base_criterion, optimizer, scheduler, early_stopper,num_e
 early_stopper = EarlyStopper(patience=20, min_delta=0.12)
 best_loss = 100000
 model_ft,best_loss,train_losses,val_losses = train_model(model, base_criterion, optimizer, exp_lr_scheduler,
-                       num_epochs=3,best_loss=best_loss,early_stopper=early_stopper,numTrain=1)
+                       num_epochs=6,best_loss=best_loss,early_stopper=early_stopper,numTrain=1)
