@@ -1,0 +1,2 @@
+File Name,General Accuracy,Two on Three Accuracy,Accuracy per Class
+train_multiHead_without_dummy_variables_REAL_grad_norm_in_epoch_new_split_balanced_0_5,"tensor(70.3171, device='cuda:0')",88.96271264104473,"(85.0811821048943, 91.84565744506176, 84.97402373329754)"

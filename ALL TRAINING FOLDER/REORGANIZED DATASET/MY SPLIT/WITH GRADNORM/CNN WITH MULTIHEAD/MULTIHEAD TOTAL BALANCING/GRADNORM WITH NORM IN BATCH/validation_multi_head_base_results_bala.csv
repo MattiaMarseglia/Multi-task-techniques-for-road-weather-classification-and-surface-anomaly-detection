@@ -1,0 +1,2 @@
+File Name,General Accuracy,Two on Three Accuracy,Accuracy per Class,balanced_accuracy,recall_std,balanced_accuracy_first_task,recall_std_first_task,balanced_accuracy_sec_task,recall_std_sec_task,balanced_accuracy_third_task,recall_std_third_task
+weight,"tensor(62.5793, device='cuda:0')",83.18992887452417,"(70.17615708887578, 83.53497310536449, 83.20071474439513)",0.19441616262407876,0.30178407170461197,0.37535584606772604,0.3962950791677653,0.8141360095106983,0.08091683252936345,0.7351807177149065,0.2624502518564947
