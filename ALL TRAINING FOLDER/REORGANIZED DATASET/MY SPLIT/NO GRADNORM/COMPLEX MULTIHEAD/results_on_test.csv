@@ -1,0 +1,2 @@
+File Name,General Accuracy,Two on Three Accuracy,Accuracy per Class
+train_multiHead_SI_dummy_vars_SI_grad_norm_cami_way_1_into_3_into_2_classifier_more_dropout_new_split,"tensor(68.9558, device='cuda:0')",93.33486072130897,"(86.02630925788036, 91.94493766347824, 83.8383259827787)"

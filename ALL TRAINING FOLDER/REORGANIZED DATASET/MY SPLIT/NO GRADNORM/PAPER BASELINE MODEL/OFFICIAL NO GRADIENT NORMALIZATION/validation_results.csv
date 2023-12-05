@@ -1,0 +1,2 @@
+File Name,General Accuracy,Two on Three Accuracy,Accuracy per Class,bala_accuracy,recall_std,balanced_accuracy_first_task,recall_std_first_task,balanced_accuracy_sec_task,recall_std_sec_task,balanced_accuracy_third_task,recall_std_third_task
+Paper_baseline_new_split,70.39003101030428,86.71932482873778,"(82.44544918419501, 85.63514008392605, 84.29636365811925)",0.5939654810755379,0.22183367324769873,0.824969862979072,0.12234683866759948,0.8544317884650129,0.060534046674413,0.8590846666115287,0.05344513273914714
