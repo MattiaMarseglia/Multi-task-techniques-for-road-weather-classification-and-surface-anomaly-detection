@@ -18,5 +18,5 @@ The "Slides" directory encompasses the presentation slides utilized for the fina
 ## Thesis
 The "Thesis" folder contains the PDF document encapsulating the final comprehensive work of the thesis.
 
-## Video Demo
-The "Video Demo" section features a recorded demonstration showcasing the practical application of the developed solution, presented upon the conclusion of the research work.
+## [DEMO](https://www.youtube.com/watch?v=Dcm0ewmD4eM)
+
