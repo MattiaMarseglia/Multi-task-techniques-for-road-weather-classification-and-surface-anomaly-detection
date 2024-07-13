@@ -45,6 +45,13 @@ A greedy selection strategy was adopted instead of beam search, choosing the pre
 
 Two new methods, Predicted Label Alignment (PLA) and Minimum Loss Alignment (MLA), were introduced for label assignment without predefined order. These methods dynamically align the order of actual labels based on loss minimization during training, leading to faster training and eliminating issues such as repeated label assignment.
 
+### Model Architecture
+
+<div align="center">
+  <img src="ModelArchitecture.png" alt="Model Architecture">
+</div>
+
+
 ## Project Structure
 
 ### Training Folder
