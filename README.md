@@ -48,7 +48,7 @@ Two new methods, Predicted Label Alignment (PLA) and Minimum Loss Alignment (MLA
 ### Model Architecture
 
 <div align="center">
-  <img src="ModelArchitecture.png" alt="Model Architecture">
+  <img src="ModelArchitecture.jpg" alt="Model Architecture">
 </div>
 
 
